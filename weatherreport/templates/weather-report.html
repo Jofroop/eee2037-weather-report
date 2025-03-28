@@ -1,0 +1,165 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Weather Report</title>
+    
+    <!-- Load Bulma CSS from Cloudflare like on the target website. -->
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/css/bulma.min.css" />
+</head>
+
+<body>
+    <!-- Script.JS is stored controls the scrolling banner at the top. -->
+
+    <script src="/static/script.js"></script>
+
+    <!-- This section is the one at the very top with the Surrey logo. -->
+
+    <section class="section" 
+             style="padding: 0px 0px 0px 0px; background-color:rgb(0,70,130)">
+        <div class="container" style="margin-left: 3px">
+            <img src="/static/surrey-logo.svg" width="144px" height="44px">
+        </div>
+    </section>
+
+    <!-- This section is the cyan coloured hero banner. Normally this mentions your username, but we aren't implementing the status codes so we don't need to do that. -->
+
+    <section class="hero is-primary">
+        <div class="hero-body">
+            <div class="container">
+                <h1 class="title">
+                    My Weather Report
+                    <span id="welcome" hidden></span>
+                </h1>
+            </div>
+        </div>
+    </section>
+
+    <!-- The scrolling banner that has information about Guildford. -->
+
+    <section class="hero is-info">
+        <marquee behavior="scroll" direction="left" id="cityinfo"></marquee>
+    </section>
+
+    <!-- This section has the image background and the POST form to add cities. -->
+
+    <section class="section"
+             style="background-image:url(/static/metofficegovuk_heroXLarge.jpeg)">
+        <div class="container">
+            <div class="columns">
+                <div class="column is-offset-4 is-4">
+                    <form method="POST" action="/">
+
+                        <!-- CSRF token needed for the form to work. -->
+
+                        {% csrf_token %}
+                        <div class="field has-addons">
+                            <div class="control is-expanded">
+                                <input class="input" name="city" type="text" placeholder="City Name" required>
+                            </div>
+                            <div class="control">
+                                <button class="button is-info" onclick="onPageRefresh();return true;">
+                                    Add City
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <!-- Error for things like when city already exists, city invalid etc... -->
+
+                    {% if error_message %}
+                    <div class="notification is-danger" style="margin-top:20px">
+                        <button class="delete"></button>
+                        {{ error_message }}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- For when a city is successfully added. -->
+
+                    {% if success_message %}
+                    <div class="notification is-success" style="margin-top:20px">
+                        <button class="delete"></button>
+                        {{ success_message }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- This section contains all the city cards. -->
+
+    <section class="section">
+        <div class="container">
+            <div class="columns">
+                <div class="column is-offset-4 is-4">
+                    <!-- Iterate through the cities variable, passed through the context. -->
+
+                    {% for city in cities %}
+                    <div class="box">
+                        <article class="media">
+                            <div class="media-left">
+                                <figure class="image is-64x64">
+                                    <!-- Each city is given an icon based on the current weather, use that icon (stored in /static/weather-icons/) -->
+
+                                    <img src="/static/weather-icons/{{ city.icon }}" alt="Weather Icon">
+                                </figure>
+                            </div>
+                            <div class="media-content">
+                                <div class="content">
+                                    <p>
+                                        <span class="title">{{ city.name }}</span>
+                                        <br>
+                                        <span class="subtitle">{{ city.temperature }}° C</span>
+                                        <br> {{ city.conditions }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Used to delete the city. Page needs to refresh for the user to see the changes. -->
+
+                            <div class="media-right">
+                                <a href="/delete/{{ city.name }}" onclick="onPageRefresh();return true;">
+                                    <button class="delete"></button>
+                                </a>
+                            </div>
+                        </article>
+                    </div>
+                    {% endfor %}
+                    
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Below this is the footer. -->
+
+    <hr style="border-top:2px solid #000000; margin-bottom:0px;">
+    <footer class="footer has-background-info-light"
+            style="padding-top: 20px;padding-bottom: 25px;">
+    
+    <div class="container">
+        <div class="level">
+          <div class="level-left">
+            <!-- The Bulma logo is served directly from their website, not locally/statically. -->
+
+            <span width="200" class="level-item">
+              Styled by &nbsp;<img src="https://bulma.io/assets/brand/Bulma Logo.png" alt="Bulma Logo" width="60" />
+            </span>
+          </div>
+          <div class="level-right">
+            <div class="level-item">
+              <div class="content has-text-centered has-text-white-invert">©2022 C.H. Foh</div>
+            </div>
+          </div>
+        </div>
+    </div>
+    </footer>
+
+</body>
+</html>
